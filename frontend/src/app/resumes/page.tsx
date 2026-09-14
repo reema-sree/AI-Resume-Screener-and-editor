@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FileText, Plus, Upload, Download, Sparkles, Trash2, Eye, Edit3 } from 'lucide-react';
 import { fetchApi, getResumeDownloadUrl } from '@/lib/api';
+import { getStoredUser } from '@/lib/auth';
 
 export default function ResumesListPage() {
   const [resumes, setResumes] = useState<any[]>([]);
@@ -11,8 +12,9 @@ export default function ResumesListPage() {
 
   useEffect(() => {
     async function loadResumes() {
+      const activeUser = getStoredUser();
       try {
-        const data = await fetchApi('/resumes');
+        const data = await fetchApi(`/resumes?user_id=${activeUser.id}`);
         setResumes(data);
       } catch (e) {
         console.error(e);

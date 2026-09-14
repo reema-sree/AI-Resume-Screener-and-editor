@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Sparkles, FileText, Briefcase, CheckSquare, Zap, AlertTriangle, ArrowRight, Bookmark, ThumbsDown, CheckCircle2 } from 'lucide-react';
 import { fetchApi } from '@/lib/api';
+import { getStoredUser } from '@/lib/auth';
 
 export default function DashboardPage() {
+  const [user, setUser] = useState<any>({ name: 'Candidate' });
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [skillGaps, setSkillGaps] = useState<any[]>([]);
   const [mlStatus, setMlStatus] = useState<any>(null);
@@ -13,11 +15,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function loadDashboard() {
+      const activeUser = getStoredUser();
+      setUser(activeUser);
+
       try {
         const [recsData, gapsData, statusData] = await Promise.all([
-          fetchApi('/recommendations?limit=6'),
-          fetchApi('/recommendations/skill-gaps'),
-          fetchApi('/ml/status')
+          fetchApi(`/recommendations?user_id=${activeUser.id}&limit=6`),
+          fetchApi(`/recommendations/skill-gaps?user_id=${activeUser.id}`),
+          fetchApi(`/ml/status?user_id=${activeUser.id}`)
         ]);
         setRecommendations(recsData);
         setSkillGaps(gapsData);
@@ -33,11 +38,11 @@ export default function DashboardPage() {
 
   const handleInteraction = async (jobId: string, type: string) => {
     try {
-      await fetchApi(`/jobs/${jobId}/interaction`, {
+      const activeUser = getStoredUser();
+      await fetchApi(`/jobs/${jobId}/interaction?user_id=${activeUser.id}`, {
         method: 'POST',
         body: JSON.stringify({ interaction_type: type })
       });
-      // Filter out dismissed
       if (type === 'DISMISS' || type === 'NOT_RELEVANT') {
         setRecommendations(recommendations.filter(r => r.job.id !== jobId));
       }
@@ -52,7 +57,7 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900">Candidate Dashboard</h1>
-          <p className="text-sm text-slate-500">Welcome back, Alex! Here is your AI resume score & job matches summary.</p>
+          <p className="text-sm text-slate-500">Welcome, <span className="font-semibold text-slate-800">{user.name || 'Candidate'}</span>! Here is your AI resume score & job matches summary.</p>
         </div>
         <div className="flex gap-2">
           <Link
@@ -128,7 +133,7 @@ export default function DashboardPage() {
           </span>
         </div>
         <Link href="/settings" className="text-sky-400 underline font-semibold hover:text-sky-300">
-          ML Status
+          ML Telemetry
         </Link>
       </div>
 
@@ -214,19 +219,18 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Right Sidebar: Resume Quick Actions & Skill Gaps */}
+        {/* Right Sidebar: Resume Diagnostics & Skill Gaps */}
         <div className="space-y-6">
-          {/* Resume Flaws Quick Widget */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <FileText className="w-5 h-5 text-sky-600" />
-              Resume Diagnostic Status
+              Resume Diagnostics
             </h3>
 
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1 text-xs">
               <div className="font-bold text-amber-800 flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
-                2 Flaws Detected in Current Resume
+                2 Flaws Detected in Active Resume
               </div>
               <p className="text-amber-700">Project bullet points lack measurable metrics. Cloud keywords missing.</p>
             </div>
@@ -247,7 +251,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Recommended Skills to Improve */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <Zap className="w-5 h-5 text-amber-500" />

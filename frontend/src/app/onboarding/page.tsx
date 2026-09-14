@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, GraduationCap, Briefcase, CheckCircle2, ChevronRight, ChevronLeft, Plus, X } from 'lucide-react';
 import { fetchApi } from '@/lib/api';
+import { getStoredUser, setStoredUser } from '@/lib/auth';
 
 const PRESET_CATEGORIES = [
   "SOFTWARE ENGINEERING", "FRONTEND", "BACKEND", "FULL STACK",
@@ -16,33 +17,41 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState('');
 
   // Step 1 - Personal Info
-  const [fullName, setFullName] = useState('Alex Developer');
-  const [email, setEmail] = useState('alex.dev@example.com');
-  const [phone, setPhone] = useState('+1 (555) 019-2834');
-  const [city, setCity] = useState('San Francisco');
-  const [country, setCountry] = useState('USA');
-  const [linkedin, setLinkedin] = useState('https://linkedin.com/in/alexdev');
-  const [github, setGithub] = useState('https://github.com/alexdev');
-  const [portfolio, setPortfolio] = useState('https://alexdev.io');
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [city, setCity] = useState('');
+  const [country, setCountry] = useState('');
+  const [linkedin, setLinkedin] = useState('');
+  const [github, setGithub] = useState('');
+  const [portfolio, setPortfolio] = useState('');
 
   // Step 2 - Education (Major stored distinctly!)
-  const [institution, setInstitution] = useState('State Tech University');
-  const [degree, setDegree] = useState('B.Tech');
-  const [major, setMajor] = useState('Computer Science Engineering');
-  const [specialization, setSpecialization] = useState('Artificial Intelligence & Machine Learning');
+  const [institution, setInstitution] = useState('');
+  const [degree, setDegree] = useState('');
+  const [major, setMajor] = useState('');
+  const [specialization, setSpecialization] = useState('');
   const [graduationYear, setGraduationYear] = useState('2025');
-  const [gpa, setGpa] = useState('3.85');
+  const [gpa, setGpa] = useState('');
 
   // Step 3 - Job Preferences (Searchable Multi-Select)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([
-    "SOFTWARE ENGINEERING", "AI / ML", "ROBOTICS"
+    "SOFTWARE ENGINEERING"
   ]);
-  const [customRoles, setCustomRoles] = useState<string[]>(["Autonomous Systems Engineer"]);
+  const [customRoles, setCustomRoles] = useState<string[]>([]);
   const [customInput, setCustomInput] = useState('');
   const [showOutsideRoles, setShowOutsideRoles] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const user = getStoredUser();
+    setUserId(user.id);
+    setFullName(user.name !== 'Candidate User' ? user.name : '');
+    setEmail(user.email !== 'user@example.com' ? user.email : '');
+  }, []);
 
   const toggleCategory = (cat: string) => {
     if (selectedCategories.includes(cat)) {
@@ -66,11 +75,14 @@ export default function OnboardingPage() {
   const handleSubmitOnboarding = async () => {
     setLoading(true);
     try {
+      const currentSession = getStoredUser();
+      const activeUserId = currentSession.id || 'usr_' + Date.now();
+
       const payload = {
-        auth_user_id: 'demo_user_123',
+        auth_user_id: activeUserId,
         profile: {
-          full_name: fullName,
-          email,
+          full_name: fullName || currentSession.name || 'Candidate User',
+          email: email || currentSession.email || 'user@example.com',
           phone,
           city,
           country,
@@ -80,12 +92,12 @@ export default function OnboardingPage() {
           show_outside_roles: showOutsideRoles
         },
         education: {
-          institution,
-          degree,
-          major, // Stored distinctly!
+          institution: institution || 'University',
+          degree: degree || 'Bachelor of Engineering',
+          major: major || 'Computer Science', // Stored distinctly!
           specialization,
           graduation_year: parseInt(graduationYear) || 2025,
-          gpa: parseFloat(gpa) || 3.8
+          gpa: parseFloat(gpa) || 3.5
         },
         job_preferences: {
           categories: selectedCategories,
@@ -96,6 +108,13 @@ export default function OnboardingPage() {
       await fetchApi('/profile/onboarding', {
         method: 'POST',
         body: JSON.stringify(payload)
+      });
+
+      // Update active user session
+      setStoredUser({
+        id: activeUserId,
+        email: email || currentSession.email,
+        name: fullName || currentSession.name
       });
 
       router.push('/resumes/upload');
@@ -148,6 +167,7 @@ export default function OnboardingPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Full Name</label>
                 <input
                   type="text"
+                  placeholder="e.g. Jane Doe"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
@@ -157,6 +177,7 @@ export default function OnboardingPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Email</label>
                 <input
                   type="email"
+                  placeholder="jane@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
@@ -166,6 +187,7 @@ export default function OnboardingPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Phone</label>
                 <input
                   type="text"
+                  placeholder="+1 (555) 000-0000"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
@@ -175,6 +197,7 @@ export default function OnboardingPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">City</label>
                 <input
                   type="text"
+                  placeholder="San Francisco"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
@@ -184,6 +207,7 @@ export default function OnboardingPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Country</label>
                 <input
                   type="text"
+                  placeholder="USA"
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
@@ -193,6 +217,7 @@ export default function OnboardingPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">LinkedIn URL</label>
                 <input
                   type="text"
+                  placeholder="https://linkedin.com/in/yourprofile"
                   value={linkedin}
                   onChange={(e) => setLinkedin(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
@@ -202,6 +227,7 @@ export default function OnboardingPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">GitHub URL</label>
                 <input
                   type="text"
+                  placeholder="https://github.com/yourusername"
                   value={github}
                   onChange={(e) => setGithub(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
@@ -211,6 +237,7 @@ export default function OnboardingPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Portfolio URL</label>
                 <input
                   type="text"
+                  placeholder="https://yourportfolio.com"
                   value={portfolio}
                   onChange={(e) => setPortfolio(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
@@ -248,6 +275,7 @@ export default function OnboardingPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">University / Institution</label>
                 <input
                   type="text"
+                  placeholder="e.g. Stanford University"
                   value={institution}
                   onChange={(e) => setInstitution(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
@@ -296,6 +324,7 @@ export default function OnboardingPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">GPA / CGPA</label>
                 <input
                   type="text"
+                  placeholder="e.g. 3.8"
                   value={gpa}
                   onChange={(e) => setGpa(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import { uploadResumeFile } from '@/lib/api';
+import { getStoredUser } from '@/lib/auth';
 
 export default function ResumeUploadPage() {
   const router = useRouter();
@@ -19,9 +20,10 @@ export default function ResumeUploadPage() {
     setError('');
 
     try {
+      const activeUser = getStoredUser();
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('user_id', 'demo_user_123');
+      formData.append('user_id', activeUser.id);
       formData.append('target_role', targetRole);
 
       const res = await uploadResumeFile(formData);

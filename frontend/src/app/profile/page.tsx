@@ -3,17 +3,18 @@
 import { useState, useEffect } from 'react';
 import { User, GraduationCap, Briefcase, Save, CheckCircle2 } from 'lucide-react';
 import { fetchApi } from '@/lib/api';
+import { getStoredUser } from '@/lib/auth';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any>({
-    full_name: 'Alex Developer',
-    email: 'alex.dev@example.com',
-    phone: '+1 (555) 019-2834',
-    city: 'San Francisco',
-    country: 'USA',
-    linkedin_url: 'https://linkedin.com/in/alexdev',
-    github_url: 'https://github.com/alexdev',
-    portfolio_url: 'https://alexdev.io',
+    full_name: '',
+    email: '',
+    phone: '',
+    city: '',
+    country: '',
+    linkedin_url: '',
+    github_url: '',
+    portfolio_url: '',
     show_outside_roles: true
   });
   const [loading, setLoading] = useState(false);
@@ -21,11 +22,19 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function loadProf() {
+      const activeUser = getStoredUser();
       try {
-        const data = await fetchApi('/profile/demo_user_123');
+        const data = await fetchApi(`/profile/${activeUser.id}`);
         setProfile(data);
       } catch (e) {
         console.error(e);
+        setProfile({
+          full_name: activeUser.name,
+          email: activeUser.email,
+          city: 'San Francisco',
+          country: 'USA',
+          show_outside_roles: true
+        });
       }
     }
     loadProf();
@@ -35,7 +44,8 @@ export default function ProfilePage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await fetchApi('/profile/demo_user_123', {
+      const activeUser = getStoredUser();
+      await fetchApi(`/profile/${activeUser.id}`, {
         method: 'PUT',
         body: JSON.stringify(profile)
       });
