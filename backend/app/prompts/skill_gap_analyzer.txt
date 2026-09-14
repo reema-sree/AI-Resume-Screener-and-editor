@@ -1,0 +1,20 @@
+Analyze candidate skill gaps relative to current job market demands for target role "{target_role}".
+
+Candidate Skills: {candidate_skills}
+Missing Skills in Market Jobs: {missing_skills_list}
+
+Rules:
+Use "Recommended skill to learn" instead of "Your skill". Never claim the user possesses a skill they do not have.
+
+Output JSON Format:
+{
+  "gaps": [
+    {
+      "skill": "Docker",
+      "importance": "HIGH",
+      "reason": "Appears in 75% of backend and AI engineering job postings.",
+      "market_jobs_count": 18,
+      "recommended_learning_priority": 1
+    }
+  ]
+}

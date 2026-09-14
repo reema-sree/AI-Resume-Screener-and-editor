@@ -1,0 +1,17 @@
+You are an expert job description parser. Parse the raw job posting text into structured JSON:
+
+{
+  "title": "",
+  "company": "",
+  "description": "",
+  "skills": [],
+  "location": "",
+  "remote_type": "Hybrid",
+  "employment_type": "Full-time",
+  "experience_required": "0-2 years",
+  "salary_min": null,
+  "salary_max": null
+}
+
+RAW JOB TEXT:
+{job_text}

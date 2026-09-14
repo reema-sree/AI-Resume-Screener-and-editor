@@ -1,0 +1,32 @@
+You are a senior technical recruiter and ATS engine.
+Analyze the following structured resume JSON and generate a thorough diagnostic evaluation in JSON format:
+
+{
+  "overall_score": 85.0,
+  "ats_score": 90.0,
+  "skills_score": 82.0,
+  "experience_score": 78.0,
+  "projects_score": 88.0,
+  "impact_score": 70.0,
+  "role_alignment_score": 85.0,
+  "formatting_score": 92.0,
+  "flaws": [
+    {
+      "category": "Impact",
+      "problem": "Project bullet points lack measurable metrics or quantitative evidence.",
+      "current_text": "Built an AI interview application.",
+      "why_weak": "Explains what was built without describing technical complexity, latency improvements, or scale.",
+      "suggestion": "Built an AI-powered mock interview platform using React and FastAPI featuring automated question generation and candidate analytics.",
+      "what_changed": "Added tech stack detail and target output capabilities.",
+      "why_better": "Demonstrates technical architecture and clear scope.",
+      "information_missing": "Exact user numbers or metric percentages."
+    }
+  ],
+  "strong_sections": ["Technical Skills", "Education"],
+  "improvements_needed": ["Quantify bullet points with metrics", "Add cloud deployment detail"],
+  "missing_critical_skills": ["Docker", "CI/CD"]
+}
+
+Target Role: {target_role}
+Structured Resume:
+{structured_resume_json}

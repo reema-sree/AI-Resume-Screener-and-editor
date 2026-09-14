@@ -1,0 +1,29 @@
+# Node / Next.js
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+build/
+dist/
+
+# Python / Virtual Environment
+venv/
+backend/venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.joblib
+saved_models/
+
+# Uploads & Environment
+uploads/
+backend/uploads/
+.env
+.env.local
+*.log
+
+# System files
+.DS_Store
+Thumbs.db

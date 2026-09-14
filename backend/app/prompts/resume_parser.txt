@@ -1,0 +1,66 @@
+You are an expert ATS (Applicant Tracking System) parser and resume analyst.
+Extract all structured data from the following raw resume text into valid, strict JSON matching this exact JSON schema:
+
+{
+  "personal": {
+    "full_name": "",
+    "email": "",
+    "phone": "",
+    "city": "",
+    "country": "",
+    "linkedin": "",
+    "github": "",
+    "portfolio": ""
+  },
+  "education": [
+    {
+      "institution": "",
+      "degree": "",
+      "major": "",
+      "specialization": "",
+      "graduation_year": "",
+      "gpa": ""
+    }
+  ],
+  "experience": [
+    {
+      "company": "",
+      "role": "",
+      "location": "",
+      "start_date": "",
+      "end_date": "",
+      "bullet_points": []
+    }
+  ],
+  "projects": [
+    {
+      "title": "",
+      "role": "",
+      "technologies": [],
+      "link": "",
+      "bullet_points": []
+    }
+  ],
+  "skills": {
+    "programming_languages": [],
+    "frameworks": [],
+    "databases": [],
+    "cloud": [],
+    "ai_ml": [],
+    "robotics": [],
+    "tools": []
+  },
+  "certifications": [],
+  "achievements": [],
+  "leadership": [],
+  "publications": [],
+  "links": []
+}
+
+Rules:
+1. Do not omit any sections present in the resume.
+2. Separate Major from Degree cleanly (e.g. Degree: "B.Tech", Major: "Computer Science Engineering").
+3. Do not invent any false details.
+
+RAW RESUME TEXT:
+{resume_text}
